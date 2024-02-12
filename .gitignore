@@ -1,0 +1,7 @@
+__pycache__
+oauth/__pycache__
+
+.venv/
+.env
+
+data/input/ServiceKey_GoogleCloud.json
