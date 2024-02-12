@@ -3,54 +3,14 @@ from datetime import datetime
 from typing import Optional
 
 class socialMedia(BaseModel):
-    access_token: str
-    product_name: str
-    price: int
-    installment: int
-    typeSocial: str
-
-class socialMediaOut(BaseModel):
-    product_name: str
-    typeSocial: str
-    created_at: datetime
-    image: str
-
-    class Config:
-        from_attributes = True
-
-
-class requestSheet(BaseModel):
-    sheet_url: str
-
-
-class userData(BaseModel):
-    username: str
-    password: str
-
-class userOut(BaseModel):
-    id: int
-    username: str
-
-    class Config:
-        from_attributes = True
-
-
-class downloadReq(BaseModel):
-    username: str
-    typeSocial: str
-
-class imagesInfo(BaseModel):
-    price: int
-    installment: int
-    typeSocial: str
-    product_name: str
-    image: str
-
-
-class LoginResponse(BaseModel):
-    access_token: str
-    dropbox_token: str
-    user: dict
+    datetime: str
+    sku: str
+    price: float
+    installments: int
+    installments_price: float
+    product_url: str
+    image_url: str
+    bg_url: str
+    discount: str
+    product_name: Optional[str] = None
     
-class TokenData(BaseModel):
-    id: Optional[int] = None

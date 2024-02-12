@@ -4,12 +4,12 @@ from PIL import ImageDraw
 
 class storiesLayout:
 
-    def __init__(self, product_data, dropbox, user_id):
-        self.product_name = product_data.product_name.upper().split(", ")
-        self.background = load_background("data/input/templates/template-stories.jpeg", user_id, 'stories')
-        self.product = load_product_image(self.product_name[len(self.product_name) - 1], dropbox)
-        self.price = "R$" + product_data.price
-        self.installment = "R$" + product_data.installment[:-2] + "," + product_data.installment[-2:]
+    def __init__(self, product_data, templates_dir):
+        self.product_name = product_data.product_name
+        self.background = load_background(templates_dir, 'stories')
+        self.product = load_product_image(product_data.image_url)
+        self.price = "R$" + str(product_data.price)
+        self.installment = "R$" + str(product_data.installments_price)
     
     def text_wrap(self, text, font, max_width, isTitle=False):
         """ 
@@ -168,7 +168,6 @@ class storiesLayout:
         self.create_text()  
         self.product_create()  
         self.create_price()
-
         self.product.close()
         return self.background  
 
