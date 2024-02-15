@@ -33,11 +33,11 @@ def scrap_site(product_url):
     import cloudscraper, bs4
 
 
-    sess = cloudscraper.create_scraper()
+    sess = cloudscraper.create_scraper(delay=10)
     content = sess.get(product_url.replace("https", "http"))
 
 
-    scraper = cloudscraper.create_scraper(sess=sess)
+    scraper = cloudscraper.create_scraper(sess=sess, delay=10)
     content2 = scraper.get(product_url.replace("https", "http"))
 
     print(content2.text)
