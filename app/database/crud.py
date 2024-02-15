@@ -35,6 +35,8 @@ def scrap_site(product_url):
     content = scraper.get(product_url.replace("https", "http")).content
     soup = bs4.BeautifulSoup(content, "html.parser") 
 
+    print(soup)
+
     product_name_element = soup.find(attrs={"data-cy":"product-page-title"}).text.replace('/', '-')
     sku_element = soup.find('strong', string='SKU:')
     sku = sku_element.parent.text.split(':')[-1].strip().replace('/', '-')

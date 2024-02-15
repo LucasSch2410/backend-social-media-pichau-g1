@@ -67,8 +67,9 @@ def create_media(payLoad: schemas.socialMedia):
                     buffer = BytesIO()
                     final_image.save(buffer, format='PNG')
                     tmp.write(buffer.getvalue())
+                    tmp.seek(0)
 
-                    dbx.files_upload(tmp, f"/arquivos_criados/{payLoad.sku}.png", mode=dropbox.files.WriteMode("overwrite"))
+                    dbx.files_upload(tmp.read(), f"/arquivos_criados/{payLoad.sku}.png", mode=dropbox.files.WriteMode("overwrite"))
 
                 return {"message": "Imagem criada com sucesso."}
         
