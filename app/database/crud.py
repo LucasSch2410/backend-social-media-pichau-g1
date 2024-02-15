@@ -31,13 +31,33 @@ def get_dropbox_token():
 
 def scrap_site(product_url):
     import cloudscraper, bs4
-    scraper = cloudscraper.create_scraper()
-    content = scraper.get(product_url.replace("https", "http")).text
-    soup = bs4.BeautifulSoup(content, "html.parser") 
 
-    print(soup)
 
-    product_name_element = soup.find(attrs={"data-cy":"product-page-title"}).text.replace('/', '-')
+    sess = cloudscraper.create_scraper()
+    content = sess.get(product_url.replace("https", "http"))
+
+
+    scraper = cloudscraper.create_scraper(sess=sess)
+    content2 = scraper.get(product_url.replace("https", "http"))
+
+    print(content2.text)
+    return True, True
+
+
+
+
+    soup = bs4.BeautifulSoup(content.text, "html.parser") 
+
+    product_name_element = soup.find(attrs={"data-cy":"product-page-title"})
+
+    if not product_name_element:
+        print(content.headers)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f'Site inacessível ou URL inválida.',)
+    
+    product_name_element = product_name_element.text.replace('/', '-')
+
     sku_element = soup.find('strong', string='SKU:')
     sku = sku_element.parent.text.split(':')[-1].strip().replace('/', '-')
 
