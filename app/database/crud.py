@@ -30,9 +30,9 @@ def get_dropbox_token():
     
 
 def scrap_site(product_url):
-    import cfscrape, bs4
-    scraper = cfscrape.create_scraper()
-    content = scraper.get(product_url.replace("https", "http")).content
+    import cloudscraper, bs4
+    scraper = cloudscraper.create_scraper()
+    content = scraper.get(product_url.replace("https", "http")).text
     soup = bs4.BeautifulSoup(content, "html.parser") 
 
     print(soup)

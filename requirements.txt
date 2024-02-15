@@ -10,6 +10,7 @@ certifi==2023.11.17
 cfscrape==2.1.1
 charset-normalizer==3.3.2
 click==8.1.7
+cloudscraper==1.2.71
 colorama==0.4.6
 cryptography==3.4.8
 distro==1.7.0
