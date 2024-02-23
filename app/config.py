@@ -6,7 +6,6 @@ class Settings(pydantic_settings.BaseSettings):
     client_id: str
     client_secret: str
     refresh_token: str
-    google_application_credentials: str
     
     model_config = pydantic_settings.SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 

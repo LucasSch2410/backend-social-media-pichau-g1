@@ -40,12 +40,6 @@ def scrap_site(product_url):
     scraper = cloudscraper.create_scraper(sess=sess, delay=10)
     content2 = scraper.get(product_url.replace("https", "http"))
 
-    print(content2.text)
-    return True, True
-
-
-
-
     soup = bs4.BeautifulSoup(content.text, "html.parser") 
 
     product_name_element = soup.find(attrs={"data-cy":"product-page-title"})

@@ -1,10 +1,5 @@
-import os, shutil, zipfile, requests, tempfile, logging, zipfile, dropbox
-from bs4 import BeautifulSoup
-from fastapi import status, HTTPException, Depends, APIRouter, Response, FastAPI, File, UploadFile
-from fastapi.responses import JSONResponse, FileResponse
-from sqlalchemy.orm import Session
-from fastapi.params import Body
-from typing import Annotated
+import zipfile, tempfile, logging, zipfile, dropbox
+from fastapi import status, HTTPException, APIRouter
 from PIL import Image 
 from io import BytesIO
 
@@ -40,7 +35,8 @@ def create_media(payLoad: schemas.socialMedia):
     """
     web_product_name, web_sku = crud.scrap_site(payLoad.product_url)
     if web_sku != payLoad.sku:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'SKU não bate com o SKU do site.', headers={"Error": str(e)})
+        print(web_sku)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'SKU não bate com o SKU do site.')
 
     typeSocial = ["stories"]
     payLoad.price = str(payLoad.price)
