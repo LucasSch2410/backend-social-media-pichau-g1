@@ -29,9 +29,21 @@ def get_dropbox_token():
         )
 
 def download_templates(url):
-    url = url[:-1] + "1"
+    if not "dropbox" in url:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f'O link dos templates não é um link Dropbox válido.'
+            )
+    try:
+        url = url[:-1] + "1"
 
-    downloaded_file = requests.get(url)
+        downloaded_file = requests.get(url)
 
-    return downloaded_file.content
+        return downloaded_file.content
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f'Falha interna ao fazer o download das imagens. Verifique se a pasta e o nome dos arquivos estão corretos.',
+            headers={"Error": str(e)}
+        )
 
