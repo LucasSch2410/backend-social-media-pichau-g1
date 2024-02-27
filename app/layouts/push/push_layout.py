@@ -3,12 +3,12 @@ from PIL import ImageDraw
 
 class pushLayout:
 
-    def __init__(self, product_data, dropbox, user_id):
-        self.product_name = product_data.product_name.upper().split(", ")
-        self.background = load_background("data/input/templates/template-push.jpeg", user_id, 'push')
-        self.product = load_product_image(self.product_name[len(self.product_name) - 1], dropbox)
-        self.price = "R$" + product_data.price
-        self.installment = "R$" + product_data.installment[:-2] + "," + product_data.installment[-2:]
+    def __init__(self, product_data, templates_dir):
+        self.product_name = product_data.product_name.upper().split(', ')
+        self.background = load_background(templates_dir, 'push')
+        self.product = load_product_image(product_data.image_url)
+        self.price = "R$" + str(product_data.price)
+        self.installment = "R$" + str(product_data.installments_price)
     
     def text_wrap(self, text, font, max_width, isTitle=False):
         """ 
@@ -141,10 +141,10 @@ class pushLayout:
         marginTop = 230 
 
         priceLength = load_font(75).getlength(self.price)
-        priceLengthWithoutCents = load_font(75).getlength(self.price[:-2])
+        priceLengthWithoutCents = load_font(75).getlength(self.price[:-3])
         
         draw.polygon([(30, marginTop + 75), (36, marginTop), (priceLength + 44, marginTop), (priceLength + 40, marginTop + 75)], fill=(254, 72, 89))
-        draw.text((45, marginTop + 6), f"{self.price[:-2]}", font=load_font(75), fill=(255, 255, 255))
+        draw.text((45, marginTop + 6), f"{self.price[:-3]}", font=load_font(75), fill=(255, 255, 255))
         draw.text((45 + priceLengthWithoutCents, marginTop + 10), f",{self.price[-2:]}", font=load_font(42), fill=(255, 255, 255))
         
         # Footer text

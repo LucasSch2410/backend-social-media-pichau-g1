@@ -3,12 +3,12 @@ from PIL import ImageDraw
 
 class wideLayout:
 
-    def __init__(self, product_data, dropbox, user_id):
-        self.product_name = product_data.product_name.upper().split(", ")
-        self.background = load_background("data/input/templates/template-wide.jpeg", user_id, 'wide')
-        self.product = load_product_image(self.product_name[len(self.product_name) - 1], dropbox)
-        self.price = "R$" + product_data.price
-        self.installment = "R$" + product_data.installment[:-2] + "," + product_data.installment[-2:]
+    def __init__(self, product_data, templates_dir):
+        self.product_name = product_data.product_name.upper().split(', ')
+        self.background = load_background(templates_dir, 'wide')
+        self.product = load_product_image(product_data.image_url)
+        self.price = "R$" + str(product_data.price)
+        self.installment = "R$" + str(product_data.installments_price)
     
     def text_wrap(self, text, font, max_width, isTitle=False):
         """ 
@@ -141,10 +141,10 @@ class wideLayout:
         marginTop = 590
 
         priceLength = load_font(140).getlength(self.price)
-        priceLengthWithoutCents = load_font(140).getlength(self.price[:-2])
+        priceLengthWithoutCents = load_font(140).getlength(self.price[:-3])
         
         draw.polygon([(80, marginTop + 140), (100, marginTop - 30), (priceLength + 150, marginTop - 30), (priceLength + 130, marginTop + 140)], fill=(254, 72, 89))
-        draw.text((120, marginTop), f"{self.price[:-2]}", font=load_font(140), fill=(255, 255, 255))
+        draw.text((120, marginTop), f"{self.price[:-3]}", font=load_font(140), fill=(255, 255, 255))
         draw.text((120 + priceLengthWithoutCents, marginTop + 5), f",{self.price[-2:]}", font=load_font(75), fill=(255, 255, 255))
         draw.text((140 + priceLengthWithoutCents, marginTop + 75), "À VISTA", font=load_font(30), fill=(255, 255, 255))
 

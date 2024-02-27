@@ -27,38 +27,6 @@ def get_dropbox_token():
             detail=f'Falha interna na geração de token: {str(e)}',
             headers={"Error": str(e)}
         )
-    
-
-def scrap_site(product_url):
-    import cloudscraper, bs4
-
-
-    sess = cloudscraper.create_scraper(delay=10)
-    content = sess.get(product_url.replace("https", "http"))
-
-
-    scraper = cloudscraper.create_scraper(sess=sess, delay=10)
-    content2 = scraper.get(product_url.replace("https", "http"))
-
-    soup = bs4.BeautifulSoup(content.text, "html.parser") 
-
-    product_name_element = soup.find(attrs={"data-cy":"product-page-title"})
-
-    if not product_name_element:
-        print(content.headers)
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f'Site inacessível ou URL inválida.',)
-    
-    product_name_element = product_name_element.text.replace('/', '-')
-
-    sku_element = soup.find('strong', string='SKU:')
-    sku = sku_element.parent.text.split(':')[-1].strip().replace('/', '-')
-
-    if sku in product_name_element:
-        product_name = product_name_element.replace(f", {sku}", "")
-    
-    return product_name, sku
 
 def download_templates(url):
     url = url[:-1] + "1"

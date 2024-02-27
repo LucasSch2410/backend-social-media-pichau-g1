@@ -1,11 +1,10 @@
 from app.resources.resource_handler import load_background, load_product_image, load_font
-from fastapi import HTTPException, status
 from PIL import ImageDraw
 
 class storiesLayout:
 
     def __init__(self, product_data, templates_dir):
-        self.product_name = product_data.product_name
+        self.product_name = product_data.product_name.upper().split(', ')
         self.background = load_background(templates_dir, 'stories')
         self.product = load_product_image(product_data.image_url)
         self.price = "R$" + str(product_data.price)
@@ -71,7 +70,7 @@ class storiesLayout:
 
         wrapped_title = self.text_wrap(self.product_name[0], titleFont, self.background.width - 200, True) # Wrap title based on template width.
         wrapped_features = self.text_wrap(', '.join(self.product_name[1:-1]) + ',', featureFont, self.background.width - 200) # Wrap features based on template width.
-
+        print(wrapped_title)
         draw.text((110,480), '\n'.join(wrapped_title), font=titleFont, fill=(255, 255, 255), # Draw text with white fill.
                 stroke_width=6, stroke_fill=(0, 0, 0)) # Add black stroke around text for better visibility.
         
@@ -143,10 +142,10 @@ class storiesLayout:
 
         # Price text and polygon
         priceLength = load_font(140).getlength(self.price)
-        priceLengthWithoutCents = load_font(140).getlength(self.price[:-2])
+        priceLengthWithoutCents = load_font(140).getlength(self.price[:-3])
         
         draw.polygon([(80, marginTop + 140), (100, marginTop - 30), (priceLength + 160, marginTop - 30), (priceLength + 140, marginTop + 140)], fill=(254, 72, 89))
-        draw.text((130, marginTop), f"{self.price[:-2]}", font=load_font(140), fill=(255, 255, 255))
+        draw.text((130, marginTop), f"{self.price[:-3]}", font=load_font(140), fill=(255, 255, 255))
         draw.text((140 + priceLengthWithoutCents, marginTop + 5), f",{self.price[-2:]}", font=load_font(75), fill=(255, 255, 255))
         draw.text((160 + priceLengthWithoutCents, marginTop + 75), "À VISTA", font=load_font(30), fill=(255, 255, 255))
 

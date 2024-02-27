@@ -33,15 +33,10 @@ def create_media(payLoad: schemas.socialMedia):
 
     user: Username from the user of the request.
     """
-    web_product_name, web_sku = crud.scrap_site(payLoad.product_url)
-    if web_sku != payLoad.sku:
-        print(web_sku)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'SKU não bate com o SKU do site.')
+    if payLoad.sku in payLoad.product_name:
+        payLoad.product_name = payLoad.product_name.replace(payLoad.sku, "")
 
-    typeSocial = ["stories"]
-    payLoad.price = str(payLoad.price)
-    payLoad.installments = str(payLoad.installments)
-    payLoad.product_name = web_product_name
+    typeSocial = ["stories", "post", "push", "wide"]
 
     try:
         with tempfile.TemporaryDirectory(dir=".") as tmp_dir:
@@ -49,23 +44,21 @@ def create_media(payLoad: schemas.socialMedia):
             with zipfile.ZipFile(BytesIO(zip_data)) as zip:
                 zip.extractall(tmp_dir)
                 
-                print(tmp_dir)
                 access_token = crud.get_dropbox_token()
                 dbx = dropbox_connect(access_token)
 
                 for type in typeSocial:
                     layout = createLayout(type)
                     final_image = layout(payLoad, tmp_dir)()
-                    # final_image = final_image.convert('RGB')   
 
-                with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
+                    with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
 
-                    buffer = BytesIO()
-                    final_image.save(buffer, format='PNG')
-                    tmp.write(buffer.getvalue())
-                    tmp.seek(0)
+                        buffer = BytesIO()
+                        final_image.save(buffer, format='PNG')
+                        tmp.write(buffer.getvalue())
+                        tmp.seek(0)
 
-                    dbx.files_upload(tmp.read(), f"/arquivos_criados/{payLoad.sku}.png", mode=dropbox.files.WriteMode("overwrite"))
+                        dbx.files_upload(tmp.read(), f"/arquivos_criados/{payLoad.sku}-{type}.png", mode=dropbox.files.WriteMode("overwrite"))
 
                 return {"message": "Imagem criada com sucesso."}
         

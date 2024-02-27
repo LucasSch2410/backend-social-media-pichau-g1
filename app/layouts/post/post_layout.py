@@ -3,12 +3,12 @@ from PIL import ImageDraw
 
 class postLayout:
 
-    def __init__(self, product_data, dropbox, user_id):
-        self.product_name = product_data.product_name.upper().split(", ")
-        self.background = load_background("data/input/templates/template-post.jpeg", user_id, 'post')
-        self.product = load_product_image(self.product_name[len(self.product_name) - 1], dropbox)
-        self.price = "R$" + product_data.price
-        self.installment = "R$" + product_data.installment[:-2] + "," + product_data.installment[-2:]
+    def __init__(self, product_data, templates_dir):
+        self.product_name = product_data.product_name.upper().split(', ')
+        self.background = load_background(templates_dir, 'post')
+        self.product = load_product_image(product_data.image_url)
+        self.price = "R$" + str(product_data.price)
+        self.installment = "R$" + str(product_data.installments_price)
     
     def text_wrap(self, text, font, max_width, isTitle=False):
         """ 
@@ -142,10 +142,10 @@ class postLayout:
         marginTop = 700 
 
         priceLength = load_font(90).getlength(self.price)
-        priceLengthWithoutCents = load_font(90).getlength(self.price[:-2])
+        priceLengthWithoutCents = load_font(90).getlength(self.price[:-3])
         
         draw.polygon([(47, marginTop + 90), (57, marginTop - 15), (priceLength + 77, marginTop - 15), (priceLength + 70, marginTop + 90)], fill=(254, 72, 89))
-        draw.text((70, marginTop), f"{self.price[:-2]}", font=load_font(95), fill=(255, 255, 255))
+        draw.text((70, marginTop), f"{self.price[:-3]}", font=load_font(95), fill=(255, 255, 255))
         draw.text((80 + priceLengthWithoutCents, marginTop + 5), f",{self.price[-2:]}", font=load_font(35), fill=(255, 255, 255))
         draw.text((85 + priceLengthWithoutCents, marginTop + 45), "À VISTA", font=load_font(20), fill=(255, 255, 255))
 

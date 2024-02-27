@@ -8,7 +8,7 @@ class socialMedia(BaseModel):
     price: float
     installments: int
     installments_price: float
-    product_url: str
+    product_name: str
     image_url: str
     bg_url: str
     discount: str
