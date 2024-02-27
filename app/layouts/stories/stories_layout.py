@@ -8,7 +8,7 @@ class storiesLayout:
         self.background = load_background(templates_dir, 'stories')
         self.product = load_product_image(product_data.image_url)
         self.price = "R$" + str(product_data.price)
-        self.installment = "R$" + str(product_data.installments_price)
+        self.installment = "R$" + str(product_data.installments_price).replace(".", ",")
     
     def text_wrap(self, text, font, max_width, isTitle=False):
         """ 
