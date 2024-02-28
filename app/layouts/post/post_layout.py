@@ -1,5 +1,6 @@
 from app.resources.resource_handler import load_background, load_product_image, load_font
 from PIL import ImageDraw
+from fastapi import HTTPException, status
 
 class postLayout:
 
@@ -7,8 +8,10 @@ class postLayout:
         self.product_name = product_data.product_name.upper().split(', ')
         self.background = load_background(templates_dir, 'post')
         self.product = load_product_image(product_data.image_url)
-        self.price = "R$" + str(product_data.price)
-        self.installment = "R$" + str(product_data.installments_price)
+        self.price = str(product_data.price).replace(".", ",").split(",")
+        self.installment = product_data.installments
+        self.installment_price = "R$" + str(product_data.installments_price).replace(".", ",")
+        self.discount = product_data.discount
     
     def text_wrap(self, text, font, max_width, isTitle=False):
         """ 
@@ -123,34 +126,40 @@ class postLayout:
         Return:
             Return True in the end of the process.
         """
-        
+        import re
+
         draw = ImageDraw.Draw(self.background)
-
-        # Installments discounts text
-        draw.text((855, 700), "PARCELE EM 1X COM", font=load_font(25), fill=(255, 255, 255),
-                    stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
-        draw.text((855, 725), "7% DE DESCONTO", font=load_font(35), fill=(255, 255, 255),
-                    stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
-        
-        draw.text((855, 765), "OU ATÉ 3X COM", font=load_font(25), fill=(255, 255, 255),
-                    stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
-        draw.text((855, 790), "5% DE DESCONTO", font=load_font(35), fill=(255, 255, 255),
-                    stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
-        
-
-        # Price text and polygon
         marginTop = 700 
 
-        priceLength = load_font(90).getlength(self.price)
-        priceLengthWithoutCents = load_font(90).getlength(self.price[:-3])
+        # Installments discounts text
+        pattern = r'^(.*?)\b(\d+%.*?)$'
+        match = re.match(pattern, self.discount)
+
+        if match:
+            discount = match.groups()
+
+            draw.text((855, 700), discount[0].upper().strip(), font=load_font(45), fill=(255, 255, 255),
+                        stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
+            draw.text((855, 745), discount[1].upper().strip(), font=load_font(55), fill=(255, 255, 255),
+                        stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f'Coluna desconto está um padrão incorreto.'
+            )
+
+        # Price text and polygon
+
+        priceLength = load_font(90).getlength("R$" + ",".join(self.price))
+        priceLengthWithoutCents = load_font(90).getlength("R$"+ self.price[0])
         
         draw.polygon([(47, marginTop + 90), (57, marginTop - 15), (priceLength + 77, marginTop - 15), (priceLength + 70, marginTop + 90)], fill=(254, 72, 89))
-        draw.text((70, marginTop), f"{self.price[:-3]}", font=load_font(95), fill=(255, 255, 255))
-        draw.text((80 + priceLengthWithoutCents, marginTop + 5), f",{self.price[-2:]}", font=load_font(35), fill=(255, 255, 255))
+        draw.text((70, marginTop), f"R${self.price[0]}", font=load_font(95), fill=(255, 255, 255))
+        draw.text((80 + priceLengthWithoutCents, marginTop + 5), f",{self.price[1]}", font=load_font(35), fill=(255, 255, 255))
         draw.text((85 + priceLengthWithoutCents, marginTop + 45), "À VISTA", font=load_font(20), fill=(255, 255, 255))
 
         # Installment price
-        draw.text((70, marginTop + 100), f"OU EM ATÉ 12X DE {self.installment}", font=load_font(25), fill=(255, 255, 255),
+        draw.text((70, marginTop + 100), f"OU EM ATÉ {self.installment}X DE {self.installment_price}", font=load_font(25), fill=(255, 255, 255),
                   stroke_width=3, stroke_fill=(0, 0, 0))
         
         # Footer text

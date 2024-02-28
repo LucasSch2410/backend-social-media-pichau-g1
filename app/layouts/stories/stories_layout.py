@@ -1,5 +1,6 @@
 from app.resources.resource_handler import load_background, load_product_image, load_font
 from PIL import ImageDraw
+from fastapi import HTTPException, status
 
 class storiesLayout:
 
@@ -7,8 +8,10 @@ class storiesLayout:
         self.product_name = product_data.product_name.upper().split(', ')
         self.background = load_background(templates_dir, 'stories')
         self.product = load_product_image(product_data.image_url)
-        self.price = "R$" + str(product_data.price)
-        self.installment = "R$" + str(product_data.installments_price).replace(".", ",")
+        self.price = str(product_data.price).replace(".", ",").split(",")
+        self.installment = product_data.installments
+        self.installment_price = "R$" + str(product_data.installments_price).replace(".", ",")
+        self.discount = product_data.discount
     
     def text_wrap(self, text, font, max_width, isTitle=False):
         """ 
@@ -125,32 +128,40 @@ class storiesLayout:
             Return True in the end of the process.
         """
 
+        import re
+
         draw = ImageDraw.Draw(self.background)
         marginTop = 1500 
 
         # Installments discounts text
-        draw.text((1000, marginTop + 40), "PARCELE EM 1X COM", font=load_font(45), fill=(255, 255, 255),
-                    stroke_width=6, stroke_fill=(0, 0, 0), anchor="rs")
-        draw.text((1000, marginTop + 100), "7% DE DESCONTO", font=load_font(60), fill=(255, 255, 255),
-                    stroke_width=6, stroke_fill=(0, 0, 0), anchor="rs")
-        
-        draw.text((1000, marginTop + 160), "OU ATÉ 3X COM", font=load_font(45), fill=(255, 255, 255),
-                    stroke_width=6, stroke_fill=(0, 0, 0), anchor="rs")
-        draw.text((1000, marginTop + 220), "5% DE DESCONTO", font=load_font(60), fill=(255, 255, 255),
-                    stroke_width=6, stroke_fill=(0, 0, 0), anchor="rs")
+        pattern = r'^(.*?)\b(\d+%.*?)$'
+        match = re.match(pattern, self.discount)
+
+        if match:
+            discount = match.groups()
+
+            draw.text((1000, marginTop + 90), discount[0].upper().strip(), font=load_font(55), fill=(255, 255, 255),
+                        stroke_width=6, stroke_fill=(0, 0, 0), anchor="rs")
+            draw.text((1000, marginTop + 150), discount[1].upper().strip(), font=load_font(70), fill=(255, 255, 255),
+                        stroke_width=6, stroke_fill=(0, 0, 0), anchor="rs")
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f'Coluna desconto está um padrão incorreto.'
+            )
         
 
         # Price text and polygon
-        priceLength = load_font(140).getlength(self.price)
-        priceLengthWithoutCents = load_font(140).getlength(self.price[:-3])
+        priceLength = load_font(140).getlength("R$" + ",".join(self.price))
+        priceLengthWithoutCents = load_font(140).getlength("R$"+ self.price[0])
         
         draw.polygon([(80, marginTop + 140), (100, marginTop - 30), (priceLength + 160, marginTop - 30), (priceLength + 140, marginTop + 140)], fill=(254, 72, 89))
-        draw.text((130, marginTop), f"{self.price[:-3]}", font=load_font(140), fill=(255, 255, 255))
-        draw.text((140 + priceLengthWithoutCents, marginTop + 5), f",{self.price[-2:]}", font=load_font(75), fill=(255, 255, 255))
+        draw.text((130, marginTop), f"R${self.price[0]}", font=load_font(140), fill=(255, 255, 255))
+        draw.text((140 + priceLengthWithoutCents, marginTop + 5), f",{self.price[1]}", font=load_font(75), fill=(255, 255, 255))
         draw.text((160 + priceLengthWithoutCents, marginTop + 75), "À VISTA", font=load_font(30), fill=(255, 255, 255))
 
         # Installment price
-        draw.text((100, marginTop + 170), f"OU EM ATÉ 12X DE {self.installment}", font=load_font(55), fill=(255, 255, 255),
+        draw.text((100, marginTop + 170), f"OU EM ATÉ {self.installment}X DE {self.installment_price}", font=load_font(55), fill=(255, 255, 255),
                   stroke_width=6, stroke_fill=(0, 0, 0))
         
         # Footer text

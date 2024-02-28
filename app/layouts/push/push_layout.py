@@ -1,5 +1,6 @@
 from app.resources.resource_handler import load_background, load_product_image, load_font
 from PIL import ImageDraw
+from fastapi import HTTPException, status
 
 class pushLayout:
 
@@ -7,8 +8,10 @@ class pushLayout:
         self.product_name = product_data.product_name.upper().split(', ')
         self.background = load_background(templates_dir, 'push')
         self.product = load_product_image(product_data.image_url)
-        self.price = "R$" + str(product_data.price)
-        self.installment = "R$" + str(product_data.installments_price)
+        self.price = str(product_data.price).replace(".", ",").split(",")
+        self.installment = product_data.installments
+        self.installment_price = "R$" + str(product_data.installments_price).replace(".", ",")
+        self.discount = product_data.discount
     
     def text_wrap(self, text, font, max_width, isTitle=False):
         """ 
@@ -123,29 +126,35 @@ class pushLayout:
         Return:
             Return True in the end of the process.
         """
+        import re
+        marginTop = 230 
 
         draw = ImageDraw.Draw(self.background)
 
         # Installments discounts text
-        draw.text((690, 220), "PARCELE EM 1X COM", font=load_font(20), fill=(255, 255, 255),
-                    stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
-        draw.text((690, 240), "7% DE DESCONTO", font=load_font(25), fill=(255, 255, 255),
-                    stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
-        
-        draw.text((690, 270), "OU ATÉ 3X COM", font=load_font(20), fill=(255, 255, 255),
-                    stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
-        draw.text((690, 290), "5% DE DESCONTO", font=load_font(25), fill=(255, 255, 255),
-                    stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
+        pattern = r'^(.*?)\b(\d+%.*?)$'
+        match = re.match(pattern, self.discount)
+
+        if match:
+            discount = match.groups()
+            draw.text((690, 270), discount[0].upper().strip(), font=load_font(20), fill=(255, 255, 255),
+                        stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
+            draw.text((690, 290), discount[1].upper().strip(), font=load_font(25), fill=(255, 255, 255),
+                        stroke_width=2, stroke_fill=(0, 0, 0), anchor="ra")
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f'Coluna desconto está um padrão incorreto.'
+            )
         
         # Price text and polygon
-        marginTop = 230 
 
-        priceLength = load_font(75).getlength(self.price)
-        priceLengthWithoutCents = load_font(75).getlength(self.price[:-3])
+        priceLength = load_font(75).getlength("R$" + ",".join(self.price))
+        priceLengthWithoutCents = load_font(75).getlength("R$"+ self.price[0])
         
-        draw.polygon([(30, marginTop + 75), (36, marginTop), (priceLength + 44, marginTop), (priceLength + 40, marginTop + 75)], fill=(254, 72, 89))
-        draw.text((45, marginTop + 6), f"{self.price[:-3]}", font=load_font(75), fill=(255, 255, 255))
-        draw.text((45 + priceLengthWithoutCents, marginTop + 10), f",{self.price[-2:]}", font=load_font(42), fill=(255, 255, 255))
+        draw.polygon([(30, marginTop + 75), (36, marginTop), (priceLength + 34, marginTop), (priceLength + 30, marginTop + 75)], fill=(254, 72, 89))
+        draw.text((45, marginTop + 6), f"R${self.price[0]}", font=load_font(75), fill=(255, 255, 255))
+        draw.text((45 + priceLengthWithoutCents, marginTop + 10), f",{self.price[1]}", font=load_font(42), fill=(255, 255, 255))
         
         # Footer text
         draw.text((360, 330), "Preço válido somente durante o período da promoção ou enquanto houver unidades promocionais disponíveis.",

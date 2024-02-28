@@ -63,8 +63,9 @@ def create_media(payLoad: schemas.socialMedia):
                 return {"message": "Imagem criada com sucesso."}
         
     except HTTPException as http_exception:
+        logging.error(http_exception, exc_info=True)
         raise http_exception
     except Exception as e:
-        logging.error(e)
+        logging.error(e, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'Erro interno.', headers={"Error": str(e)})
 
